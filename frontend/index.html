@@ -10,6 +10,16 @@
 <body>
     <canvas id="bg-canvas"></canvas>
 
+    <div id="qr-modal" class="qr-modal">
+        <div class="qr-content">
+            <span class="close-modal" id="close-qr">&times;</span>
+            <h2>Link QR Code</h2>
+            <div id="qr-canvas-container"></div>
+            <p>Scan to warp to destination</p>
+            <button class="price-btn" id="download-qr">Download QR</button>
+        </div>
+    </div>
+
     <div id="redirect-overlay" class="redirect-overlay">
         <div class="vortex-spinner"></div>
         <h2>Vortexing you to destination...</h2>

@@ -1,4 +1,5 @@
 import { initScene } from './src/scene.js';
+import QRCode from 'qrcode';
 
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:3000'
@@ -88,6 +89,9 @@ async function renderLinks() {
                 </div>
             </div>
             <div class="actions">
+                <button class="action-btn" onclick="showQR('${freshData.shortCode}')" title="Get QR Code">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><path d="M7 7h.01M17 7h.01M7 17h.01"></path></svg>
+                </button>
                 <button class="action-btn" onclick="copyToClipboard('${shortUrl}')" title="Copy Vortex Link">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
                 </button>
@@ -227,6 +231,51 @@ urlInput.addEventListener('keypress', (e) => {
 initScene();
 handleRedirection();
 renderLinks();
+
+// QR Code Logic
+window.showQR = async (shortCode) => {
+    const modal = document.getElementById('qr-modal');
+    const container = document.getElementById('qr-canvas-container');
+    const downloadBtn = document.getElementById('download-qr');
+    const url = `${window.location.origin}/#${shortCode}`;
+
+    container.innerHTML = '';
+    const canvas = document.createElement('canvas');
+    container.appendChild(canvas);
+
+    try {
+        await QRCode.toCanvas(canvas, url, {
+            width: 250,
+            margin: 2,
+            color: {
+                dark: '#0f172a',
+                light: '#ffffff'
+            }
+        });
+        modal.style.display = 'flex';
+        
+        downloadBtn.onclick = () => {
+            const link = document.createElement('a');
+            link.download = `vortex-qr-${shortCode}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        };
+    } catch (err) {
+        console.error(err);
+        showToast('Failed to generate QR', true);
+    }
+};
+
+document.getElementById('close-qr').onclick = () => {
+    document.getElementById('qr-modal').style.display = 'none';
+};
+
+window.onclick = (event) => {
+    const modal = document.getElementById('qr-modal');
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+};
 
 // Auto refresh stats every 30 seconds
 setInterval(renderLinks, 30000);

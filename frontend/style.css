@@ -463,3 +463,57 @@ footer {
     50% { box-shadow: 0 0 40px rgba(168, 85, 247, 0.5); }
 }
 
+.qr-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(2, 6, 23, 0.85);
+    backdrop-filter: blur(15px);
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-content {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 2.5rem;
+    border-radius: 28px;
+    text-align: center;
+    position: relative;
+    max-width: 400px;
+    width: 90%;
+    animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes modalPop {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.close-modal {
+    position: absolute;
+    top: 1.2rem;
+    right: 1.5rem;
+    font-size: 2rem;
+    cursor: pointer;
+    color: var(--text-dim);
+    transition: color 0.3s;
+}
+
+.close-modal:hover {
+    color: white;
+}
+
+#qr-canvas-container canvas {
+    border-radius: 16px;
+    margin: 2rem 0;
+    box-shadow: 0 0 40px rgba(168, 85, 247, 0.4);
+    background: white;
+    padding: 10px;
+}
+
