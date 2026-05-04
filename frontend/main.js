@@ -220,7 +220,31 @@ fetchGitHubActivity();
 
 // Initial Load
 initScene();
+checkServerHealth();
 loadLinks();
+
+async function checkServerHealth() {
+    const statusLabel = document.querySelector('.status-value');
+    const ring = document.querySelector('.meter-ring');
+    
+    try {
+        const res = await fetch(`${API_URL.replace('/api', '')}/health`);
+        if (res.ok) {
+            statusLabel.innerText = 'OPTIMAL';
+            statusLabel.style.color = 'var(--cyan)';
+            ring.style.background = 'var(--cyan)';
+            ring.style.boxShadow = '0 0 15px var(--cyan)';
+        } else {
+            throw new Error();
+        }
+    } catch (err) {
+        statusLabel.innerText = 'CONNECTION FAILED';
+        statusLabel.style.color = 'var(--error)';
+        ring.style.background = 'var(--error)';
+        ring.style.boxShadow = '0 0 15px var(--error)';
+        showToast('Vortex Core Offline - Check Network', 'error');
+    }
+}
 
 // Auto-check for redirection
 if (window.location.hash) {
