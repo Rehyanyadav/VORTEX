@@ -228,12 +228,20 @@ async function checkServerHealth() {
     const ring = document.querySelector('.meter-ring');
     
     try {
-        const res = await fetch(`${API_URL.replace('/api', '')}/health`);
-        if (res.ok) {
+        // Fetch via the proper /api prefix
+        const res = await fetch(`${API_URL}/health`);
+        const data = await res.json();
+        
+        if (res.ok && data.database === 'Connected') {
             statusLabel.innerText = 'OPTIMAL';
             statusLabel.style.color = 'var(--cyan)';
             ring.style.background = 'var(--cyan)';
             ring.style.boxShadow = '0 0 15px var(--cyan)';
+        } else if (data.database !== 'Connected') {
+            statusLabel.innerText = 'DATABASE OFFLINE';
+            statusLabel.style.color = '#f59e0b';
+            ring.style.background = '#f59e0b';
+            showToast('MongoDB not connected - check Vercel Env Vars', 'error');
         } else {
             throw new Error();
         }
@@ -242,7 +250,7 @@ async function checkServerHealth() {
         statusLabel.style.color = 'var(--error)';
         ring.style.background = 'var(--error)';
         ring.style.boxShadow = '0 0 15px var(--error)';
-        showToast('Vortex Core Offline - Check Network', 'error');
+        console.error('Health Check Failed:', err);
     }
 }
 

@@ -217,8 +217,8 @@ app.get('/shorten/:shortCode/stats', async (req, res) => {
   }
 });
 
-// Health Check / Diagnostics
-app.get('/health', async (req, res) => {
+// Health Check / Diagnostics (Handles both root and /api prefix)
+const healthHandler = async (req, res) => {
   const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
   res.status(200).json({
     status: 'Alive',
@@ -227,7 +227,10 @@ app.get('/health', async (req, res) => {
     env: process.env.NODE_ENV,
     hasMongoUri: !!process.env.MONGODB_URI
   });
-});
+};
+
+app.get('/health', healthHandler);
+app.get('/api/health', healthHandler);
 
 // Export for Vercel
 module.exports = app;
