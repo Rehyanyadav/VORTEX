@@ -611,3 +611,58 @@ footer {
     font-weight: 500;
 }
 
+/* Features Grid */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 5rem;
+    padding-bottom: 2rem;
+}
+
+.feature-card {
+    background: rgba(30, 41, 59, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 2.5rem 1.5rem;
+    border-radius: 28px;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    backdrop-filter: blur(5px);
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    background: rgba(30, 41, 59, 0.6);
+    border-color: rgba(168, 85, 247, 0.4);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1.2rem;
+    filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.5));
+}
+
+.feature-card h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.8rem;
+    color: white;
+    font-weight: 600;
+}
+
+.feature-card p {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+}
+
+footer {
+    text-align: center;
+    padding: 3rem 0;
+    margin-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+

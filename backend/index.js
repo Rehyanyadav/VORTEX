@@ -62,20 +62,14 @@ app.use('/shorten', limiter);
 
 app.use(bodyParser.json());
 
-// Helper to generate funny Hindi short codes
+// Helper to generate small but unique short codes
 function generateShortCode() {
-  const jokes = [
-    'chirkut-vortex', 'nautanki-baaz', 'dhakkan-link', 'vella-insan', 
-    'pappu-pass', 'shaana-vortex', 'jhakaas-link', 'kadak-maal', 
-    'mast-vortex', 'dhinchak-url', 'faadu-link', 'bindaas-vortex',
-    'shaktimaan', 'mogambo-khush', 'gabbar-singh', 'thakur-saab',
-    'babu-rao', 'ganpat-vortex', 'majnu-bhai', 'uday-shetty',
-    'circuit-bhai', 'munna-bhai', 'pappu-can-dance', 'oye-lucky'
-  ];
-  
-  const randomJoke = jokes[Math.floor(Math.random() * jokes.length)];
-  const randomSuffix = Math.floor(100 + Math.random() * 899); // 3 digit number for uniqueness
-  return `${randomJoke}-${randomSuffix}`;
+  const chars = 'abcdefghjkmnpqrstuvwxyz23456789'; // No confusing chars like 1, l, o, 0
+  let result = '';
+  for (let i = 0; i < 4; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
 }
 
 // --- API Endpoints ---
