@@ -137,6 +137,87 @@ const linksList = document.getElementById('links-list');
 const btnLoader = document.getElementById('btn-loader');
 const expirySelect = document.getElementById('expiry-select');
 
+// --- GITHUB LIVE FEED SYSTEM ---
+const TECH_HUBS = [
+    { name: 'San Francisco', lat: 37.7749, lon: -122.4194 },
+    { name: 'Bangalore', lat: 12.9716, lon: 77.5946 },
+    { name: 'London', lat: 51.5074, lon: -0.1278 },
+    { name: 'Tokyo', lat: 35.6762, lon: 139.6503 },
+    { name: 'Berlin', lat: 52.5200, lon: 13.4050 },
+    { name: 'New York', lat: 40.7128, lon: -74.0060 },
+    { name: 'Singapore', lat: 1.3521, lon: 103.8198 },
+    { name: 'Sydney', lat: -33.8688, lon: 151.2093 }
+];
+
+async function fetchGitHubActivity() {
+    try {
+        const res = await fetch('https://api.github.com/events?per_page=5');
+        const events = await res.json();
+        
+        events.forEach((event, index) => {
+            setTimeout(() => {
+                const hub = TECH_HUBS[Math.floor(Math.random() * TECH_HUBS.length)];
+                triggerGlobalEvent(event, hub);
+            }, index * 2000); // Stagger events
+        });
+    } catch (err) {
+        console.error('GitHub Feed Error:', err);
+    }
+}
+
+function triggerGlobalEvent(event, hub) {
+    // 1. Trigger Globe Arc
+    const startLat = hub.lat * (Math.PI / 180);
+    const startLon = hub.lon * (Math.PI / 180);
+    
+    // Target is a random other hub
+    const targetHub = TECH_HUBS[Math.floor(Math.random() * TECH_HUBS.length)];
+    const endLat = targetHub.lat * (Math.PI / 180);
+    const endLon = targetHub.lon * (Math.PI / 180);
+
+    const start = new THREE.Vector3().setFromSphericalCoords(SCENE_CONFIG.globeRadius, Math.PI/2 - startLat, startLon);
+    const end = new THREE.Vector3().setFromSphericalCoords(SCENE_CONFIG.globeRadius, Math.PI/2 - endLat, endLon);
+    
+    const mid = start.clone().lerp(end, 0.5);
+    mid.normalize().multiplyScalar(SCENE_CONFIG.globeRadius * 1.4);
+
+    const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
+    const points = curve.getPoints(50);
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const material = new THREE.LineBasicMaterial({ color: 0x8b5cf6, transparent: true, opacity: 0 });
+    const line = new THREE.Line(geometry, material);
+    scene.add(line);
+    
+    arcs.push({ line, progress: 0, speed: 0.02 });
+
+    // 2. Show Live Pulse UI
+    showLivePulse(event, hub.name);
+}
+
+function showLivePulse(event, location) {
+    const pulse = document.createElement('div');
+    pulse.className = 'live-pulse';
+    const type = event.type.replace('Event', '');
+    pulse.innerHTML = `
+        <span class="pulse-icon">🚀</span>
+        <div class="pulse-info">
+            <strong>${event.actor.login}</strong> ${type.toLowerCase()}d on 
+            <span class="pulse-repo">${event.repo.name.split('/')[1]}</span>
+            <div class="pulse-loc">📍 ${location}</div>
+        </div>
+    `;
+    document.getElementById('live-feed').appendChild(pulse);
+    
+    setTimeout(() => {
+        pulse.style.opacity = '0';
+        setTimeout(() => pulse.remove(), 1000);
+    }, 5000);
+}
+
+// Start GitHub polling
+setInterval(fetchGitHubActivity, 15000);
+fetchGitHubActivity();
+
 // Initial Load
 initScene();
 loadLinks();
