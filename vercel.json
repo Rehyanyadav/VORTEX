@@ -5,17 +5,9 @@
       "runtime": "@vercel/node"
     }
   },
-    {
-      "source": "/health",
-      "destination": "/backend/api.js"
-    },
-    {
-      "source": "/api/(.*)",
-      "destination": "/backend/api.js"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/frontend/$1"
-    }
+  "rewrites": [
+    { "source": "/health",       "destination": "/backend/api.js" },
+    { "source": "/api/(.*)",    "destination": "/backend/api.js" },
+    { "source": "/(.*)",        "destination": "/frontend/$1" }
   ]
 }
