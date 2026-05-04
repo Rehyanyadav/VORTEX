@@ -3,27 +3,45 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const xss = require('xss');
+const mongoose = require('mongoose');
 require('dotenv').config();
 const rateLimit = require('express-rate-limit');
 const bodyParser = require('body-parser');
-const fs = require('fs');
-const path = require('path');
 const { body, validationResult } = require('express-validator');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DB_FILE = path.join(__dirname, 'db.json');
+const MONGODB_URI = process.env.MONGODB_URI;
+
+// --- Database Connection ---
+if (MONGODB_URI) {
+  mongoose.connect(MONGODB_URI)
+    .then(() => console.log('Connected to MongoDB Atlas'))
+    .catch(err => console.error('MongoDB connection error:', err));
+} else {
+  console.warn('WARNING: MONGODB_URI not found. Backend will not work on Vercel without it.');
+}
+
+// --- Schema & Model ---
+const urlSchema = new mongoose.Schema({
+  url: { type: String, required: true },
+  shortCode: { type: String, required: true, unique: true },
+  accessCount: { type: Number, default: 0 },
+  createdAt: { type: String, default: () => new Date().toISOString() },
+  updatedAt: { type: String, default: () => new Date().toISOString() }
+});
+
+const URLModel = mongoose.model('URL', urlSchema);
 
 // --- Middleware ---
 app.use(helmet());
-app.use(morgan('combined')); // Production-ready logging
+app.use(morgan('combined'));
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'], // Restrict to trusted origins
+  origin: '*', // Allow all for public Vercel deployment, or restrict to your frontend URL
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type']
 }));
 
-// Rate limiting: 100 requests per 15 minutes per IP
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -32,27 +50,6 @@ const limiter = rateLimit({
 app.use('/shorten', limiter);
 
 app.use(bodyParser.json());
-
-// --- Database Helper ---
-const getDB = () => {
-  try {
-    if (!fs.existsSync(DB_FILE)) {
-      fs.writeFileSync(DB_FILE, JSON.stringify({ urls: [] }, null, 2));
-    }
-    return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
-  } catch (error) {
-    console.error('Database read error:', error);
-    return { urls: [] };
-  }
-};
-
-const saveDB = (data) => {
-  try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
-  } catch (error) {
-    console.error('Database write error:', error);
-  }
-};
 
 // Helper to generate short codes
 function generateShortCode() {
@@ -69,60 +66,60 @@ function generateShortCode() {
 // Create Short URL
 app.post('/shorten', [
   body('url').isURL().withMessage('Please provide a valid URL')
-], (req, res) => {
+], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { url } = req.body;
-  const sanitizedUrl = xss(url); // Sanitize input
-  const db = getDB();
-  const shortCode = generateShortCode();
-  const now = new Date().toISOString();
+  try {
+    const { url } = req.body;
+    const sanitizedUrl = xss(url);
+    const shortCode = generateShortCode();
 
-  const newEntry = {
-    id: Date.now().toString(), // Use timestamp for unique ID
-    url: sanitizedUrl,
-    shortCode,
-    createdAt: now,
-    updatedAt: now,
-    accessCount: 0
-  };
+    const newEntry = new URLModel({
+      url: sanitizedUrl,
+      shortCode
+    });
 
-  db.urls.push(newEntry);
-  saveDB(db);
+    await newEntry.save();
 
-  res.status(201).json({
-    id: newEntry.id,
-    url: newEntry.url,
-    shortCode: newEntry.shortCode,
-    createdAt: newEntry.createdAt,
-    updatedAt: newEntry.updatedAt
-  });
+    res.status(201).json({
+      id: newEntry._id,
+      url: newEntry.url,
+      shortCode: newEntry.shortCode,
+      createdAt: newEntry.createdAt,
+      updatedAt: newEntry.updatedAt
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create short URL' });
+  }
 });
 
 // Retrieve Original URL
-app.get('/shorten/:shortCode', (req, res) => {
+app.get('/shorten/:shortCode', async (req, res) => {
   const { shortCode } = req.params;
-  const db = getDB();
-  const entry = db.urls.find(u => u.shortCode === shortCode);
+  
+  try {
+    const entry = await URLModel.findOne({ shortCode });
 
-  if (!entry) {
-    return res.status(404).json({ error: 'Short URL not found' });
+    if (!entry) {
+      return res.status(404).json({ error: 'Short URL not found' });
+    }
+
+    entry.accessCount += 1;
+    await entry.save();
+
+    res.status(200).json(entry);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
   }
-
-  // Increment access count
-  entry.accessCount += 1;
-  saveDB(db);
-
-  res.status(200).json(entry);
 });
 
 // Update Short URL
 app.put('/shorten/:shortCode', [
   body('url').isURL().withMessage('Please provide a valid URL')
-], (req, res) => {
+], async (req, res) => {
   const { shortCode } = req.params;
   const errors = validationResult(req);
   
@@ -130,65 +127,72 @@ app.put('/shorten/:shortCode', [
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { url } = req.body;
-  const sanitizedUrl = xss(url);
-  const db = getDB();
-  const entryIndex = db.urls.findIndex(u => u.shortCode === shortCode);
+  try {
+    const { url } = req.body;
+    const sanitizedUrl = xss(url);
+    
+    const entry = await URLModel.findOne({ shortCode });
 
-  if (entryIndex === -1) {
-    return res.status(404).json({ error: 'Short URL not found' });
+    if (!entry) {
+      return res.status(404).json({ error: 'Short URL not found' });
+    }
+
+    entry.url = sanitizedUrl;
+    entry.updatedAt = new Date().toISOString();
+    await entry.save();
+
+    res.status(200).json({
+      id: entry._id,
+      url: entry.url,
+      shortCode: entry.shortCode,
+      createdAt: entry.createdAt,
+      updatedAt: entry.updatedAt
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
   }
-
-  db.urls[entryIndex].url = sanitizedUrl;
-  db.urls[entryIndex].updatedAt = new Date().toISOString();
-  saveDB(db);
-
-  const updated = db.urls[entryIndex];
-  res.status(200).json({
-    id: updated.id,
-    url: updated.url,
-    shortCode: updated.shortCode,
-    createdAt: updated.createdAt,
-    updatedAt: updated.updatedAt
-  });
 });
 
 // Delete Short URL
-app.delete('/shorten/:shortCode', (req, res) => {
+app.delete('/shorten/:shortCode', async (req, res) => {
   const { shortCode } = req.params;
-  const db = getDB();
-  const entryIndex = db.urls.findIndex(u => u.shortCode === shortCode);
+  
+  try {
+    const result = await URLModel.findOneAndDelete({ shortCode });
 
-  if (entryIndex === -1) {
-    return res.status(404).json({ error: 'Short URL not found' });
+    if (!result) {
+      return res.status(404).json({ error: 'Short URL not found' });
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
   }
-
-  db.urls.splice(entryIndex, 1);
-  saveDB(db);
-
-  res.status(204).send();
 });
 
 // Get URL Statistics
-app.get('/shorten/:shortCode/stats', (req, res) => {
+app.get('/shorten/:shortCode/stats', async (req, res) => {
   const { shortCode } = req.params;
-  const db = getDB();
-  const entry = db.urls.find(u => u.shortCode === shortCode);
+  
+  try {
+    const entry = await URLModel.findOne({ shortCode });
 
-  if (!entry) {
-    return res.status(404).json({ error: 'Short URL not found' });
+    if (!entry) {
+      return res.status(404).json({ error: 'Short URL not found' });
+    }
+
+    res.status(200).json(entry);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
   }
-
-  res.status(200).json(entry);
 });
 
-// Global Error Handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong on our end.' });
-});
+// Export for Vercel
+module.exports = app;
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`Vortex Engine running securely on http://localhost:${PORT}`);
-});
+// Local Start
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Vortex Engine running locally on http://localhost:${PORT}`);
+  });
+}

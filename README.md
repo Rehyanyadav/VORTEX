@@ -21,10 +21,10 @@ Vortex is a high-performance URL shortening service designed for the modern web.
 
 ### Backend
 - **Node.js & Express**: High-concurrency server.
-- **Morgan**: Production-grade request logging.
-- **Helmet**: Security headers.
-- **Express-Rate-Limit**: Brute-force protection.
-- **Express-Validator**: Sanitized input handling.
+- **Mongoose**: MongoDB object modeling.
+- **MongoDB Atlas**: Cloud database for serverless persistence.
+- **Helmet & Rate-Limit**: Enterprise security.
+- **Vercel**: Serverless deployment for both Frontend & Backend.
 
 ## 🚀 Getting Started
 
@@ -32,21 +32,18 @@ Vortex is a high-performance URL shortening service designed for the modern web.
 - Node.js (v16+)
 - npm
 
-### Installation
+### Production Deployment (Vercel)
 
-1. **Clone the repository** (or navigate to the project folder).
-2. **Setup Backend**:
-   ```bash
-   cd backend
-   npm install
-   npm start
-   ```
-3. **Setup Frontend**:
-   ```bash
-   cd ../frontend
-   npm install
-   npm run dev
-   ```
+1. **Setup MongoDB Atlas**:
+   - Create a free cluster at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas).
+   - Get your **Connection String (URI)**.
+2. **Deploy Backend**:
+   - Import the `backend` folder into Vercel.
+   - Add Environment Variable: `MONGODB_URI` = `your_mongodb_connection_string`.
+3. **Deploy Frontend**:
+   - Import the `frontend` folder into Vercel.
+   - Update `API_BASE` in `main.js` to your backend's Vercel URL.
+
 
 ### API Endpoints
 

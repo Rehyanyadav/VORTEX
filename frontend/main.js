@@ -2,7 +2,7 @@ import { initScene } from './src/scene.js';
 
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:3000'
-    : 'https://vortex-api.up.railway.app'; // Replace with your actual production URL after deploying backend
+    : 'https://vortex-2w7w.vercel.app';
 const urlInput = document.getElementById('url-input');
 const shortenBtn = document.getElementById('shorten-btn');
 const linksList = document.getElementById('links-list');
