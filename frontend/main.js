@@ -87,6 +87,7 @@ async function renderLinks() {
                     <a href="${shortUrl}" class="short-url" target="_blank">${window.location.host}/#${freshData.shortCode}</a>
                     <span class="stats-badge">${freshData.accessCount || 0} hits</span>
                 </div>
+                ${freshData.expiresAt ? `<div class="expiry-label">Expires: ${new Date(freshData.expiresAt).toLocaleTimeString()}</div>` : ''}
             </div>
             <div class="actions">
                 <button class="action-btn" onclick="showQR('${freshData.shortCode}')" title="Get QR Code">
@@ -109,6 +110,7 @@ async function renderLinks() {
 
 async function shortenUrl() {
     const url = urlInput.value.trim();
+    const ttl = document.getElementById('expiry-select').value;
     if (!url) return;
 
     setLoading(true);
@@ -116,7 +118,7 @@ async function shortenUrl() {
         const response = await fetch(`${API_BASE}/shorten`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url })
+            body: JSON.stringify({ url, ttl: parseInt(ttl) })
         });
 
         if (response.ok) {

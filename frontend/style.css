@@ -517,3 +517,97 @@ footer {
     padding: 10px;
 }
 
+/* Security Dashboard */
+.security-dashboard {
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(168, 85, 247, 0.2);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    backdrop-filter: blur(10px);
+}
+
+.health-meter {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.meter-ring {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(34, 211, 238, 0.1);
+    border-top: 3px solid #22d3ee;
+    border-radius: 50%;
+    animation: spin 3s linear infinite;
+    position: relative;
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
+}
+
+.health-status {
+    display: flex;
+    flex-direction: column;
+}
+
+.status-label {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.status-value {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #22d3ee;
+    text-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
+}
+
+.security-stats {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+}
+
+.advanced-options {
+    margin-top: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+}
+
+#expiry-select {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 10px;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+#expiry-select:hover {
+    border-color: var(--accent);
+    background: rgba(15, 23, 42, 1);
+}
+
+.expiry-label {
+    font-size: 0.75rem;
+    color: #f43f5e;
+    margin-top: 0.5rem;
+    font-weight: 500;
+}
+

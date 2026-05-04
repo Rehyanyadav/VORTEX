@@ -32,13 +32,42 @@
             <p class="subtitle">Secure. Fast. Immersive.</p>
         </header>
 
-        <section class="shorten-box">
+        <div class="security-dashboard">
+            <div class="health-meter">
+                <div class="meter-ring"></div>
+                <div class="health-status">
+                    <span class="status-label">Security Health</span>
+                    <span class="status-value">OPTIMAL</span>
+                </div>
+            </div>
+            <div class="security-stats">
+                <div class="stat-item">
+                    <span class="stat-icon">🛡️</span>
+                    <span class="stat-text">Encryption Active</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">🕵️</span>
+                    <span class="stat-text">Bot Protection On</span>
+                </div>
+            </div>
+        </div>
+
+        <section class="input-section">
             <div class="input-group">
-                <input type="text" id="url-input" placeholder="Paste your long URL here..." autocomplete="off">
+                <input type="text" id="url-input" placeholder="Warp your long URL here...">
                 <button id="shorten-btn">
                     <span class="btn-text">Shorten</span>
                     <div class="loader" id="btn-loader"></div>
                 </button>
+            </div>
+            <div class="advanced-options">
+                <label for="expiry-select">Auto-Expire:</label>
+                <select id="expiry-select">
+                    <option value="0">Never</option>
+                    <option value="60">1 Hour</option>
+                    <option value="1440">24 Hours</option>
+                    <option value="10080">7 Days</option>
+                </select>
             </div>
         </section>
 

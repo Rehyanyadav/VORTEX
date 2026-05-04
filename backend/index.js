@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const xss = require('xss');
 const mongoose = require('mongoose');
+const CryptoJS = require('crypto-js');
 require('dotenv').config();
 const rateLimit = require('express-rate-limit');
 const bodyParser = require('body-parser');
@@ -12,6 +13,7 @@ const { body, validationResult } = require('express-validator');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI;
+const SECRET_KEY = process.env.SECRET_KEY || 'vortex-super-secret-101';
 
 let lastError = null;
 
@@ -32,9 +34,10 @@ if (MONGODB_URI) {
 
 // --- Schema & Model ---
 const urlSchema = new mongoose.Schema({
-  url: { type: String, required: true },
+  url: { type: String, required: true }, // Encrypted original URL
   shortCode: { type: String, required: true, unique: true },
   accessCount: { type: Number, default: 0 },
+  expiresAt: { type: Date, default: null }, // Self-destruct time
   createdAt: { type: String, default: () => new Date().toISOString() },
   updatedAt: { type: String, default: () => new Date().toISOString() }
 });
@@ -87,23 +90,32 @@ app.post('/shorten', [
   }
 
   try {
-    const { url } = req.body;
+    const { url, ttl } = req.body; // ttl in minutes
     const sanitizedUrl = xss(url);
     const shortCode = generateShortCode();
 
+    // Encrypt the original URL
+    const encryptedUrl = CryptoJS.AES.encrypt(sanitizedUrl, SECRET_KEY).toString();
+
+    let expiresAt = null;
+    if (ttl && ttl > 0) {
+      expiresAt = new Date(Date.now() + ttl * 60000);
+    }
+
     const newEntry = new URLModel({
-      url: sanitizedUrl,
-      shortCode
+      url: encryptedUrl,
+      shortCode,
+      expiresAt
     });
 
     await newEntry.save();
 
     res.status(201).json({
       id: newEntry._id,
-      url: newEntry.url,
+      url: sanitizedUrl, // Return decrypted for the response
       shortCode: newEntry.shortCode,
-      createdAt: newEntry.createdAt,
-      updatedAt: newEntry.updatedAt
+      expiresAt: newEntry.expiresAt,
+      createdAt: newEntry.createdAt
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to create short URL' });
@@ -121,10 +133,20 @@ app.get('/shorten/:shortCode', async (req, res) => {
       return res.status(404).json({ error: 'Short URL not found' });
     }
 
+    // Check if expired
+    if (entry.expiresAt && new Date() > entry.expiresAt) {
+      await URLModel.deleteOne({ shortCode }); // Cleanup expired link
+      return res.status(410).json({ error: 'Link has expired' });
+    }
+
+    // Decrypt the URL
+    const bytes = CryptoJS.AES.decrypt(entry.url, SECRET_KEY);
+    const decryptedUrl = bytes.toString(CryptoJS.enc.Utf8);
+
     entry.accessCount += 1;
     await entry.save();
 
-    res.status(200).json(entry);
+    res.status(200).json({ ...entry._doc, url: decryptedUrl });
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }
