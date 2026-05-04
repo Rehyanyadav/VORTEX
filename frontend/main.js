@@ -80,9 +80,19 @@ async function renderLinks() {
         card.className = 'link-card';
         const shortUrl = `${window.location.origin}/#${freshData.shortCode}`;
         
+        const jokes = [
+            "Pappu: Papa, cycle chahiye. Papa: Padhai par focus karo, cycle par nahi!",
+            "Santa: Biwi se jhagda khatam? Banta: Haan, ghutno par chalkar aayi thi. Santa: Kya boli? Banta: Bed ke niche se bahar aao!",
+            "Teacher: Sabse bada dushman kaun? Student: Homework!",
+            "Patient: Doctor, log mujhe ignore karte hain. Doctor: Next please!",
+            "Banta: Aaj maine ek naya business shuru kiya. Santa: Kaunsa? Banta: 'Vortex' bechne ka!"
+        ];
+        const randomJoke = jokes[Math.floor(Math.random() * jokes.length)];
+
         card.innerHTML = `
             <div class="link-info">
                 <div class="original-url">${freshData.url}</div>
+                <div class="joke-text">✨ ${randomJoke}</div>
                 <div class="short-url-container">
                     <a href="${shortUrl}" class="short-url" target="_blank">${window.location.host}/#${freshData.shortCode}</a>
                     <span class="stats-badge">${freshData.accessCount || 0} hits</span>
