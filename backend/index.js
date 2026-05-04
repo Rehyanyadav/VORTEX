@@ -66,7 +66,7 @@ app.use(bodyParser.json());
 function generateShortCode() {
   const chars = 'abcdefghjkmnpqrstuvwxyz23456789'; // No confusing chars like 1, l, o, 0
   let result = '';
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 3; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return result;
