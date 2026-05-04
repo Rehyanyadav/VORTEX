@@ -12,7 +12,7 @@ const btnText = document.querySelector('.btn-text');
 // Handle redirection if hash exists
 async function handleRedirection() {
     const hash = window.location.hash.substring(1);
-    if (hash && hash.length === 6) {
+    if (hash) {
         const overlay = document.getElementById('redirect-overlay');
         const main = document.getElementById('main-container');
         
