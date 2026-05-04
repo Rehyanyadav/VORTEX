@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vortex | Premium 3D URL Engine</title>
+    <meta name="description" content="Secure, fast, and visually stunning URL shortening experience.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+
+    <div id="redirect-overlay" class="redirect-overlay">
+        <div class="vortex-spinner"></div>
+        <h2>Vortexing you to destination...</h2>
+        <p>Hang tight, we're warping space-time.</p>
+    </div>
+
+    <div class="container" id="main-container">
+        <header>
+            <h1>Vortex</h1>
+            <p class="subtitle">Secure. Fast. Immersive.</p>
+        </header>
+
+        <section class="shorten-box">
+            <div class="input-group">
+                <input type="text" id="url-input" placeholder="Paste your long URL here..." autocomplete="off">
+                <button id="shorten-btn">
+                    <span class="btn-text">Shorten</span>
+                    <div class="loader" id="btn-loader"></div>
+                </button>
+            </div>
+        </section>
+
+        <section class="links-list" id="links-list">
+            <!-- Link cards will be injected here -->
+        </section>
+
+        <footer>
+            <p>&copy; 2026 Vortex Engine. Built for the future.</p>
+        </footer>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>
