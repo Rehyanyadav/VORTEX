@@ -190,6 +190,17 @@ app.get('/shorten/:shortCode/stats', async (req, res) => {
 // Export for Vercel
 module.exports = app;
 
+// Health Check / Diagnostics
+app.get('/health', async (req, res) => {
+  const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
+  res.status(200).json({
+    status: 'Alive',
+    database: dbStatus,
+    env: process.env.NODE_ENV,
+    hasMongoUri: !!process.env.MONGODB_URI
+  });
+});
+
 // Local Start
 if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
