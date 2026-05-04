@@ -13,11 +13,19 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI;
 
+let lastError = null;
+
 // --- Database Connection ---
 if (MONGODB_URI) {
   mongoose.connect(MONGODB_URI)
-    .then(() => console.log('Connected to MongoDB Atlas'))
-    .catch(err => console.error('MongoDB connection error:', err));
+    .then(() => {
+      console.log('Connected to MongoDB Atlas');
+      lastError = null;
+    })
+    .catch(err => {
+      console.error('MongoDB connection error:', err);
+      lastError = err.message;
+    });
 } else {
   console.warn('WARNING: MONGODB_URI not found. Backend will not work on Vercel without it.');
 }
@@ -193,6 +201,7 @@ app.get('/health', async (req, res) => {
   res.status(200).json({
     status: 'Alive',
     database: dbStatus,
+    error: lastError,
     env: process.env.NODE_ENV,
     hasMongoUri: !!process.env.MONGODB_URI
   });
